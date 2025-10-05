@@ -1,3 +1,6 @@
+import streamlit as st
+
+api_key = st.secrets["GEMINI_API_KEY"]
 import os
 from google import genai
 from dotenv import load_dotenv
@@ -15,7 +18,7 @@ If the user is greeting you then just provide a greeting response to the user.
 """
 
 def generate_output(User_Query, Data_Chunks):
-    client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
+    client = genai.Client(api_key=api_key)
     prompt = f"User Query: {User_Query}\n\nDATA:\n{Data_Chunks}\n\n{PROMPT_TEMPLATE}"
     print(prompt)
     response = client.models.generate_content(
