@@ -8,7 +8,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def ingest_documents(folder_path=os.getenv("DATA_FILES_PATH"), persist_dir=os.getenv("VECTOR_DB_PATH"), state_file=os.getenv("STATE_FILE")):
+def ingest_documents(folder_path=None, persist_dir=None, state_file=None):
+    import os
+    folder_path = folder_path or os.path.join(os.getcwd(), "ALL_Docs")
+    persist_dir = persist_dir or os.path.join(os.getcwd(), "chroma_storage")
+    state_file = state_file or os.path.join(os.getcwd(), "state.json")
+
+    os.makedirs(persist_dir, exist_ok=True)  # ensure vector DB folder exists
+
+
+    # Compute hash of documents
     current_hash = DataExtr.compute_docs_hash(folder_path)
 
     # Check previous state
@@ -56,7 +65,8 @@ def ingest_documents(folder_path=os.getenv("DATA_FILES_PATH"), persist_dir=os.ge
     print("✅ Ingestion complete.\n")
 
 
-def query_chromadb(user_query, persist_dir="chroma_storage", top_k=5):
+def query_chromadb(user_query, persist_dir=None, top_k=5):
+    persist_dir = persist_dir or os.getenv("VECTOR_DB_PATH") or os.path.join(os.getcwd(), "chroma_storage")
     client = chromadb.PersistentClient(path=persist_dir)
     collection = client.get_or_create_collection(name="my_docs")
     model = SentenceTransformer("multi-qa-MiniLM-L6-cos-v1")
@@ -67,8 +77,8 @@ def query_chromadb(user_query, persist_dir="chroma_storage", top_k=5):
     top_chunks = results["documents"][0]
     return "\n".join(top_chunks)
 
-# TESTING MODULE
 
+# TESTING MODULE
 if __name__ == "__main__":
     ingest_documents()
     print(query_chromadb("What documents have to be submitted with the application?"))
